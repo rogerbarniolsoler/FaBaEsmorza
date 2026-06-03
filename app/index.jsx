@@ -1,26 +1,94 @@
-import { StyleSheet, View } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
+import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
 import MapView from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import { COLORS } from '../constants/tema';
 
 export default function IndexScreen() {
+  const mapRef = useRef(null);
+  const [localitzacioActual, setLocalitzacioActual] = useState(null);
+
+  const router = useRouter();
+
+  // Coordenades de seguretat en cas que deneguin el permís. Coordenades de Barcelona
+  const regioPerDefecte = {
+    latitude: 41.3851,
+    longitude: 2.1734,
+    latitudeDelta: 0.05,
+    longitudeDelta: 0.05,
+  };
+
+  useEffect(() => {
+    (async () => {
+      //Demanar el permís de geolocalització a l'usuari
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      
+      //Gestió d'errors: Què passa si diu que no?
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permís denegat',
+          'Com que no tenim accés al GPS, et mostrarem el mapa manual. Podràs afegir els teus esmorzars igualment!'
+        );
+        return; // Parem l'execució aquí
+      }
+
+      //Si diu que sí, obtenim les coordenades
+      let localitzacio = await Location.getCurrentPositionAsync({});
+      setLocalitzacioActual(localitzacio.coords);
+      
+      // 4. Centrem el mapa de forma animada cap a la teva ubicació real
+      if (mapRef.current) {
+        mapRef.current.animateToRegion({
+          latitude: localitzacio.coords.latitude,
+          longitude: localitzacio.coords.longitude,
+          latitudeDelta: 0.015,
+          longitudeDelta: 0.015,
+        }, 1000);
+      }
+    })();
+  }, []);
+
+  // Funció del botó blau per tornar a centrar-nos
+  const recentrarMapa = () => {
+    if (!localitzacioActual) {
+      Alert.alert('Sense senyal', 'No tenim la teva ubicació actual per centrar el mapa.');
+      return;
+    }
+    
+    mapRef.current?.animateToRegion({
+      latitude: localitzacioActual.latitude,
+      longitude: localitzacioActual.longitude,
+      latitudeDelta: 0.015,
+      longitudeDelta: 0.015,
+    }, 1000);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <Header />
       
       <View style={styles.content}>
         <MapView 
+          ref={mapRef}
           style={styles.map} 
-          initialRegion={{
-            latitude: 41.3851,       // Latitud de Barcelona
-            longitude: 2.1734,       // Longitud de Barcelona
-            latitudeDelta: 0.0922,   // Zoom vertical
-            longitudeDelta: 0.0421,  // Zoom horitzontal
-          }}
-          showsUserLocation={true}   // Més endavant, quan tinguem permisos de GPS, això mostrarà el punt blau
-          showsMyLocationButton={true}
+          initialRegion={regioPerDefecte}
+          showsUserLocation={true}
+          showsMyLocationButton={false}
         />
+
+        {/* Botó de recentrar flotant */}
+        <TouchableOpacity style={styles.btnLocalitzacio} onPress={recentrarMapa}>
+          <MaterialIcons name="my-location" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+
+        {/* Botó per afegir esmorzar */}
+        <TouchableOpacity style={styles.btnNouEsmorzar} onPress={() => router.push('/nouEsmorzar')}>
+          <MaterialIcons name="add" size={36} color={COLORS.fons} />
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -32,10 +100,32 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.fons,
   },
   content: {
-    flex: 1, // Ocupa tot l'espai restant a sota del Header
+    flex: 1,
   },
   map: {
     width: '100%',
     height: '100%',
   },
+  btnLocalitzacio: {
+    position: 'absolute',
+    bottom: 100,
+    right: 20,
+    width: 40,
+    height: 40,
+    backgroundColor: '#007AFF',
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  btnNouEsmorzar: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    width: 60,
+    height: 60,
+    backgroundColor: COLORS.taronja,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
 });
