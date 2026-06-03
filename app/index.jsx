@@ -1,16 +1,19 @@
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons'; // Corregit a @expo/vector-icons
 import * as Location from 'expo-location';
-import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
 import MapView from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import FabaLocation from '../components/FabaLocation';
 import Header from '../components/Header';
 import { COLORS } from '../constants/tema';
+import { supabase } from '../lib/supabase';
 
 export default function IndexScreen() {
   const mapRef = useRef(null);
   const [localitzacioActual, setLocalitzacioActual] = useState(null);
+  const [esmorzars, setEsmorzars] = useState([]); // Estat per guardar les dades
 
   const router = useRouter();
 
@@ -22,12 +25,28 @@ export default function IndexScreen() {
     longitudeDelta: 0.05,
   };
 
+  // Descarreguem les dades quan la pantalla rep el focus
+  useFocusEffect(
+    useCallback(() => {
+      const carregarEsmorzars = async () => {
+        const { data, error } = await supabase.from('esmorzars').select('*');
+        if (error) {
+          console.error("Error carregant esmorzars:", error.message);
+        } else {
+          setEsmorzars(data || []);
+        }
+      };
+      
+      carregarEsmorzars();
+    }, [])
+  );
+
   useEffect(() => {
     (async () => {
-      //Demanar el permís de geolocalització a l'usuari
+      // Demanar el permís de geolocalització a l'usuari
       let { status } = await Location.requestForegroundPermissionsAsync();
       
-      //Gestió d'errors: Què passa si diu que no?
+      // Gestió d'errors: Què passa si diu que no?
       if (status !== 'granted') {
         Alert.alert(
           'Permís denegat',
@@ -36,11 +55,11 @@ export default function IndexScreen() {
         return; // Parem l'execució aquí
       }
 
-      //Si diu que sí, obtenim les coordenades
+      // Si diu que sí, obtenim les coordenades
       let localitzacio = await Location.getCurrentPositionAsync({});
       setLocalitzacioActual(localitzacio.coords);
       
-      // 4. Centrem el mapa de forma animada cap a la teva ubicació real
+      // Centrem el mapa de forma animada cap a la teva ubicació real
       if (mapRef.current) {
         mapRef.current.animateToRegion({
           latitude: localitzacio.coords.latitude,
@@ -78,7 +97,12 @@ export default function IndexScreen() {
           initialRegion={regioPerDefecte}
           showsUserLocation={true}
           showsMyLocationButton={false}
-        />
+        >
+          {/* Pintem totes les faves descarregades sobre el mapa */}
+          {esmorzars.map((esmorzar) => (
+            <FabaLocation key={esmorzar.id} esmorzar={esmorzar} />
+          ))}
+        </MapView>
 
         {/* Botó de recentrar flotant */}
         <TouchableOpacity style={styles.btnLocalitzacio} onPress={recentrarMapa}>
@@ -116,6 +140,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+
   },
   btnNouEsmorzar: {
     position: 'absolute',
