@@ -1,22 +1,41 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import MapView from 'react-native-maps';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Header from '../components/Header';
+import { COLORS } from '../constants/tema';
 
 export default function IndexScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Hola món!</Text>
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <Header />
+      
+      <View style={styles.content}>
+        <MapView 
+          style={styles.map} 
+          initialRegion={{
+            latitude: 41.3851,       // Latitud de Barcelona
+            longitude: 2.1734,       // Longitud de Barcelona
+            latitudeDelta: 0.0922,   // Zoom vertical
+            longitudeDelta: 0.0421,  // Zoom horitzontal
+          }}
+          showsUserLocation={true}   // Més endavant, quan tinguem permisos de GPS, això mostrarà el punt blau
+          showsMyLocationButton={true}
+        />
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.fons,
   },
-  text: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  content: {
+    flex: 1, // Ocupa tot l'espai restant a sota del Header
+  },
+  map: {
+    width: '100%',
+    height: '100%',
   },
 });
