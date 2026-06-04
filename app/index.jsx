@@ -2,7 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons'; // Corregit a @expo/vector-i
 import * as Location from 'expo-location';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Linking, StyleSheet, TouchableOpacity, View } from 'react-native';
 import MapView from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FabaLocation from '../components/FabaLocation';
@@ -72,18 +72,42 @@ export default function IndexScreen() {
   }, []);
 
   // Funció del botó blau per tornar a centrar-nos
-  const recentrarMapa = () => {
-    if (!localitzacioActual) {
-      Alert.alert('Sense senyal', 'No tenim la teva ubicació actual per centrar el mapa.');
+  const recentrarMapa = async () => {
+    // Intentem demanar permís
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    
+    // Si està bloquejat, oferim la drecera als Ajustos
+    if (status !== 'granted') {
+      Alert.alert(
+        'Permís necessari', 
+        'Has denegat l\'accés al GPS anteriorment. Per poder centrar el mapa, has d\'activar-ho des dels ajustos del telèfon.',
+        [
+          { text: 'Cancel·lar', style: 'cancel' },
+          { 
+            text: 'Obrir Ajustos', 
+            onPress: () => Linking.openSettings() // Settings natius
+          }
+        ]
+      );
       return;
     }
-    
-    mapRef.current?.animateToRegion({
-      latitude: localitzacioActual.latitude,
-      longitude: localitzacioActual.longitude,
-      latitudeDelta: 0.015,
-      longitudeDelta: 0.015,
-    }, 1000);
+
+    // 3. Si tenim permís centrem el mapa
+    try {
+      let localitzacio = await Location.getCurrentPositionAsync({});
+      const novesCoordenades = localitzacio.coords;
+      
+      setLocalitzacioActual(novesCoordenades); 
+      
+      mapRef.current?.animateToRegion({
+        latitude: novesCoordenades.latitude,
+        longitude: novesCoordenades.longitude,
+        latitudeDelta: 0.015,
+        longitudeDelta: 0.015,
+      }, 1000);
+    } catch (error) {
+      Alert.alert('Error', 'No s\'ha pogut connectar amb el GPS del telèfon.');
+    }
   };
 
   return (
