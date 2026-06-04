@@ -7,7 +7,7 @@ export const MIDES = {
 
 export const COLORS = {
   fons: '#FFFFFF',
-  verd: '#7CBE00',
+  // verd: '#7CBE00',
   taronja: '#BE6900',
   text: '#000000',
   
