@@ -1,50 +1,34 @@
-# Welcome to your Expo app 👋
+# FàBa 🍽️🫘
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**FàBa** és una app dissenyada exclusivament per immortalitzar, geolocalitzar i catalogar els grans temples de la gastronomia tradicional on el **sr. Fàbrega** i el **sr. Barniol** es reuneixen per fer el sagrat ritual de l'**esmorzar de forquilla**. 
 
-## Get started
+L'aplicació permet portar un diari visual i interactiu de cada tiberi, assegurant que cap plat de cap i pota, callos o botifarra quedi en l'oblit.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## 🚀 Què fa l'app? (Funcionalitats Clau)
 
-2. Start the app
+* **El Mapa de Faves:** La pantalla principal és un mapa interactiu que mostra l'historial de visites. Cada esmorzar guardat es converteix en una icona personalitzada en forma de **fava**. En clicar-la, s'obre un globus informatiu amb el nom del local, la valoració en estrelles i la foto real del plat.
+* **Geolocalització Dinàmica:** L'app demana permís de GPS per centrar la càmera automàticament sobre la posició actual de l'usuari. Si el permís es denega inicialment, el botó blau de la interfície inclou una drecera intel·ligent que obre els ajustos natius del telèfon per reactivar-lo fàcilment.
+* **Cercador de Locals Intel·ligent:** Al formulari de registre, l'usuari només ha de començar a escriure el nom del bar (ex: *Bodega Montferry*). L'app connecta en temps real amb un motor de cerca (Nominatim d'OpenStreetMap) per oferir un desplegable de suggeriments. Al triar-ne un, **s'autoemplena l'adreça exacta amb el número de carrer real** i s'assignen les coordenades de fons de manera invisible.
+* **Fotografia Nativa Cuadrada:** Captura el record del plat directament fent servir la càmera del dispositiu o seleccionant una imatge des de la galeria de fotos. La interfície força un format quadrat (proporció 1:1) i una compressió òptima per pujar-la al núvol a l'acte.
+* **Festa de Registre 🎉:** Perquè guardar un bon tiberi mereix una celebració, en desar el formulari i tornar al mapa, l'aplicació reacciona amb una **triple vibració curta hàptica** i una **pluja de confeti digital** que cau des de la part superior de la pantalla.
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## 🛠️ Detalls Tècnics de l'Arquitectura
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Tot i que l'experiència és fluida i senzilla per a l'usuari, per sota s'han utilitzat les següents tecnologies:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+* **Framework:** `React Native` amb `Expo Router` per a una navegació nativa basada en fitxers (flux de pantalles i modals d'iOS/Android).
+* **Base de Dades i Storage:** Connexió directa amb `Supabase` per emmagatzemar la taula relacional d'esmorzars i un *Bucket de Storage* públic on es guarden les imatges optimitzades.
+* **Motor de Mapes:** `react-native-maps` amb marcadors asíncrons congelats per garantir un rendiment fluid fins i tot amb centenars de faves pintades a la pantalla.
+* **Cercador de Direccions i GPS:** Integració gratuïta i oberta amb l'API de **Nominatim (OpenStreetMap)** utilitzant capçaleres personalitzades d'identificació (`User-Agent`) per esquivar bloquejos tant en iOS com en Android.
 
-## Get a fresh project
+---
 
-When you're ready, run:
+## 🔒 Configuració del Projecte (.env)
 
-```bash
-npm run reset-project
-```
+Per motius evidents de seguretat, les claus privades de connexió al servidor de Supabase (`EXPO_PUBLIC_SUPABASE_URL` i `EXPO_PUBLIC_SUPABASE_ANON_KEY`) no es troben pujades en aquest repositori públic. 
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+El fitxer de configuració **`.env`** es troba a l'entrega d'Atenea. S'ha de descarregar i col·locar a l'arrel del projecte abans d'executar el servidor de desenvolupament (`npx expo start`), amb el pas previ d'intal·lar les dependències amb (`npx install`).
