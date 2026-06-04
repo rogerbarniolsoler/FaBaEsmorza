@@ -2,7 +2,8 @@ import { MaterialIcons } from '@expo/vector-icons'; // Corregit a @expo/vector-i
 import * as Location from 'expo-location';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Linking, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Linking, StyleSheet, TouchableOpacity, Vibration, View } from 'react-native';
+import ConfettiCannon from 'react-native-confetti-cannon';
 import MapView from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FabaLocation from '../components/FabaLocation';
@@ -13,7 +14,11 @@ import { supabase } from '../lib/supabase';
 export default function IndexScreen() {
   const mapRef = useRef(null);
   const [localitzacioActual, setLocalitzacioActual] = useState(null);
-  const [esmorzars, setEsmorzars] = useState([]); // Estat per guardar les dades
+  const [esmorzars, setEsmorzars] = useState([]); // Estat per guardar les dades dels llocs on hem anat
+
+  // Control celebració
+  const [mostrarConfeti, setMostrarConfeti] = useState(false);
+  const totalEsmorzarsRef = useRef(null); // Guardarà quants en teníem abans de rebre el focus
 
   const router = useRouter();
 
@@ -33,7 +38,22 @@ export default function IndexScreen() {
         if (error) {
           console.error("Error carregant esmorzars:", error.message);
         } else {
-          setEsmorzars(data || []);
+          const llistaDades = data || [];
+          
+          // Si no és la primera vegada que obrim l'app i la llista és més llarga, celebrem!
+          if (totalEsmorzarsRef.current !== null && llistaDades.length > totalEsmorzarsRef.current) {
+            
+            // Triple vibració curteta (bbb-bbb-bbb)
+            // Temps: 0ms pausa -> 80ms vibració -> 100ms pausa -> 80ms vibració -> 100ms pausa -> 80ms vibració
+            Vibration.vibrate([0, 80, 100, 80, 100, 80]);
+
+            // Disparem el canó de confeti
+            setMostrarConfeti(true);
+          }
+
+          // Actualitzem sempre la referència amb el total actual
+          totalEsmorzarsRef.current = llistaDades.length;
+          setEsmorzars(llistaDades);
         }
       };
       
@@ -137,6 +157,18 @@ export default function IndexScreen() {
         <TouchableOpacity style={styles.btnNouEsmorzar} onPress={() => router.push('/nouEsmorzar')}>
           <MaterialIcons name="add" size={36} color={COLORS.fons} />
         </TouchableOpacity>
+        
+        {/* Confeti */}
+        {mostrarConfeti && (
+          <ConfettiCannon 
+            count={180}           // Quantitat de trossets de paper
+            origin={{ x: 180, y: -30 }} // Surt centrat des de dalt de la pantalla
+            autoStart={true}
+            fadeOut={true}        // Desapareixen gradualment en tocar el fons
+            fallSpeed={2800}      // Velocitat de la caiguda en mil·lisegons
+            onAnimationEnd={() => setMostrarConfeti(false)} // Es neteja sol en acabar
+          />
+        )}
       </View>
     </SafeAreaView>
   );
