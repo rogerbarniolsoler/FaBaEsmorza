@@ -111,7 +111,7 @@ export default function IndexScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
       <Header />
       
       <View style={styles.content}>

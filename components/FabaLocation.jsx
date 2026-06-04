@@ -73,7 +73,7 @@ export default function FabaLocation({ esmorzar }) {
             {/* Estrelles */}
             {renderEstrelles(esmorzar.valoracio)}
             
-            {/* Si hi ha foto, la mostrem (en Android les imatges als Callouts poden requerir una etiqueta Text al voltant) */}
+            {/* Si hi ha foto, la mostrem */}
             {esmorzar.foto_url && (
               <Text style={styles.imatgeContainer}>
                  <Image 
